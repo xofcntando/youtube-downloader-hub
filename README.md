@@ -53,7 +53,12 @@ uvicorn main:app --reload --port 8000
 ```
 Interactive Swagger documentation will be available at: `http://localhost:8000/docs`
 
-### 3. Docker Deployment
+### 3. Deploy on Render
+1. Render > New > Blueprint > pick this repo (it reads `render.yaml`, builds the `Dockerfile` with Node, ffmpeg and yt-dlp).
+2. Set `GEMINI_API_KEY`. Optionally `YT_COOKIES` and `YT_PROXY` (YouTube blocks datacenter IPs; cookies from a throwaway account or a residential proxy are what make downloads reliable).
+3. Health check: `/health`. At most `MAX_CONCURRENT_DOWNLOADS` (2) downloads run at once, extra requests get a 429.
+
+### 4. Docker Deployment (FastAPI service)
 
 ```bash
 # Run FastAPI with Docker

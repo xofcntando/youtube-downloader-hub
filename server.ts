@@ -21,7 +21,13 @@ const ai = new GoogleGenAI({
 });
 
 // Path to project-local yt-dlp binary
-const YTDLP_PATH = path.resolve(__dirname, 'bin', 'yt-dlp');
+const YTDLP_PATH = process.env.YTDLP_PATH || path.resolve(__dirname, 'bin', 'yt-dlp');
+
+// Server-wide defaults for deployments (Render): cookies.txt text and a proxy, used when the request sends none.
+const DEFAULT_COOKIES = process.env.YT_COOKIES || '';
+const DEFAULT_PROXY = process.env.YT_PROXY || '';
+const MAX_CONCURRENT_DOWNLOADS = Number(process.env.MAX_CONCURRENT_DOWNLOADS) || 2;
+let activeDownloads = 0;
 
 function extractVideoId(input: string): string | null {
   if (!input) return null;
@@ -47,6 +53,23 @@ async function startServer() {
   const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: '10mb' }));
+
+  // Render health check
+  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+  // Sweep download leftovers older than 30 minutes (crashed or abandoned requests) so the disk never fills.
+  const sweep = () => {
+    try {
+      const dir = os.tmpdir();
+      for (const f of fs.readdirSync(dir)) {
+        if (!/^(ytdl_|cookies_)/.test(f)) continue;
+        const fp = path.join(dir, f);
+        if (Date.now() - fs.statSync(fp).mtimeMs > 30 * 60 * 1000) fs.rmSync(fp, { force: true });
+      }
+    } catch {}
+  };
+  sweep();
+  setInterval(sweep, 10 * 60 * 1000).unref();
 
   // 1. YouTube Metadata / oEmbed API
   app.get('/api/yt/info', async (req, res) => {
@@ -240,14 +263,24 @@ async function startServer() {
       url, 
       format = 'mp4', // 'mp4' | 'mp3'
       quality = '1080', // 'max' | '1080' | '720' | '480' | '360'
-      cookies = '',
-      proxy = ''
+      cookies: reqCookies = '',
+      proxy: reqProxy = ''
     } = req.body;
+    const cookies = reqCookies || DEFAULT_COOKIES;
+    const proxy = reqProxy || DEFAULT_PROXY;
 
     const videoId = extractVideoId(url);
     if (!videoId) {
       return res.status(400).json({ error: 'Valid YouTube URL required' });
     }
+
+    if (activeDownloads >= MAX_CONCURRENT_DOWNLOADS) {
+      return res.status(429).json({ error: 'Server is busy with other downloads. Try again in a minute.' });
+    }
+    activeDownloads++;
+    let released = false;
+    const release = () => { if (!released) { released = true; activeDownloads--; } };
+    res.on('close', release);
 
     const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const tempDir = os.tmpdir();
@@ -262,7 +295,8 @@ async function startServer() {
       const args = [
         '--no-playlist',
         '--no-warnings',
-        '--js-runtimes', 'node:/usr/bin/node',
+        '--js-runtimes', `node:${process.execPath}`,
+        '--remote-components', 'ejs:github',
         '--extractor-args', 'youtube:player_client=ios,android,web_embedded',
       ];
 
