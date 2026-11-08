@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: youtube-downloader-hub
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY      # Google AI key for the AI video insights / code assistant
+        sync: false
+      - key: YT_COOKIES          # optional: Netscape cookies.txt text, helps against YouTube bot checks
+        sync: false
+      - key: YT_PROXY            # optional: residential proxy URL, the only reliable fix for datacenter blocking
+        sync: false
+      - key: MAX_CONCURRENT_DOWNLOADS
+        value: "2"
