@@ -208,6 +208,43 @@ def ai_summarize(
         "sample_summary": f"Video '{title}' by {uploader} covers key workflows. Use Gemini AI to extract full timestamped chapters and viral hooks."
     }
 
+@app.get("/api/v1/suggestions")
+def get_search_suggestions(q: str = Query("python tutorial")):
+    """Real-time YouTube search suggestions (100% free, no key required)."""
+    import urllib.request, json
+    url = f"https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q={urllib.parse.quote(q)}"
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            return {"query": data[0], "suggestions": data[1]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/channel-feed")
+def get_channel_feed(channel_id: str = Query("UC_x5XG1OV2P6uZZ5FSM9Ttw")):
+    """Extracts recent channel video uploads from YouTube's official RSS endpoint."""
+    import urllib.request, re
+    feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
+    try:
+        req = urllib.request.Request(feed_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req) as resp:
+            xml = resp.read().decode('utf-8')
+            entries = re.findall(r'<entry>([\s\S]*?)<\/entry>', xml)[:15]
+            videos = []
+            for entry in entries:
+                v_id = re.search(r'<yt:videoId>(.*?)<\/yt:videoId>', entry)
+                title = re.search(r'<title>(.*?)<\/title>', entry)
+                if v_id and title:
+                    videos.append({
+                        "videoId": v_id.group(1),
+                        "title": title.group(1),
+                        "url": f"https://www.youtube.com/watch?v={v_id.group(1)}"
+                    })
+            return {"channelId": channel_id, "videos": videos}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -115,6 +115,124 @@ async function startServer() {
     }
   });
 
+  // 1b. YouTube Real-Time Search Suggestions API (100% Free, Zero Auth)
+  app.get('/api/yt/suggestions', async (req, res) => {
+    try {
+      const q = (req.query.q as string) || 'coding tutorial';
+      const targetUrl = `https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=${encodeURIComponent(q)}`;
+      const response = await fetch(targetUrl);
+      if (!response.ok) {
+        return res.status(response.status).json({ error: 'Suggestions fetch failed' });
+      }
+      const data = await response.json();
+      return res.json({
+        success: true,
+        query: data[0] || q,
+        suggestions: data[1] || [],
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 1c. YouTube Channel Uploads & RSS Feed API (100% Free, Zero Auth)
+  app.get('/api/yt/channel-feed', async (req, res) => {
+    try {
+      const channelId = (req.query.channelId as string) || 'UC_x5XG1OV2P6uZZ5FSM9Ttw'; // Default: Google for Developers
+      const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`;
+      
+      const response = await fetch(feedUrl);
+      if (!response.ok) {
+        return res.status(response.status).json({ 
+          error: `Channel RSS returned ${response.status}`,
+          hint: 'Verify channelId format (e.g. UC_x5XG1OV2P6uZZ5FSM9Ttw)' 
+        });
+      }
+
+      const xmlText = await response.text();
+      
+      // Parse entries from XML
+      const channelTitleMatch = xmlText.match(/<title>(.*?)<\/title>/);
+      const channelTitle = channelTitleMatch ? channelTitleMatch[1] : 'YouTube Channel';
+
+      const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
+      const videos = [];
+      let match;
+
+      while ((match = entryRegex.exec(xmlText)) !== null && videos.length < 15) {
+        const block = match[1];
+        const vIdMatch = block.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
+        const titleMatch = block.match(/<title>(.*?)<\/title>/);
+        const pubMatch = block.match(/<published>(.*?)<\/published>/);
+        const viewsMatch = block.match(/views="(\d+)"/);
+
+        if (vIdMatch && titleMatch) {
+          const vId = vIdMatch[1];
+          videos.push({
+            videoId: vId,
+            title: titleMatch[1],
+            published: pubMatch ? pubMatch[1] : '',
+            views: viewsMatch ? Number(viewsMatch[1]) : null,
+            url: `https://www.youtube.com/watch?v=${vId}`,
+            thumbnail: `https://img.youtube.com/vi/${vId}/maxresdefault.jpg`,
+          });
+        }
+      }
+
+      return res.json({
+        success: true,
+        channelId,
+        channelTitle,
+        totalReturned: videos.length,
+        feedUrl,
+        videos,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 1d. Multi-Platform Media Extractor (TikTok, Twitter/X, Instagram, SoundCloud, Reddit)
+  app.post('/api/yt/multi-platform', async (req, res) => {
+    try {
+      const { url, platform = 'auto' } = req.body;
+      if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+      }
+
+      // Check platform domain
+      let detectedPlatform = platform;
+      if (url.includes('tiktok.com')) detectedPlatform = 'tiktok';
+      else if (url.includes('twitter.com') || url.includes('x.com')) detectedPlatform = 'twitter';
+      else if (url.includes('instagram.com')) detectedPlatform = 'instagram';
+      else if (url.includes('soundcloud.com')) detectedPlatform = 'soundcloud';
+      else if (url.includes('reddit.com')) detectedPlatform = 'reddit';
+      else if (url.includes('youtube.com') || url.includes('youtu.be')) detectedPlatform = 'youtube';
+
+      // Call Cobalt multi-platform processor
+      const cobaltRes = await fetch('https://api.cobalt.tools/', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, videoQuality: '1080', filenameStyle: 'pretty' }),
+      });
+
+      const data = await cobaltRes.json().catch(() => ({}));
+
+      return res.json({
+        success: cobaltRes.ok,
+        detectedPlatform,
+        targetUrl: url,
+        cobaltStatus: cobaltRes.status,
+        result: data,
+        resolvers: {
+          cobaltWeb: `https://cobalt.tools/#${encodeURIComponent(url)}`,
+        }
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // 2. Direct Server-Side Downloader with yt-dlp + ffmpeg
   // Allows downloading MP4 or MP3 directly to disk and streaming it back
   app.post('/api/yt/download-direct', async (req, res) => {

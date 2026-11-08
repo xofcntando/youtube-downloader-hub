@@ -256,11 +256,20 @@ services:
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'download' | 'ai' | 'fastapi' | 'catalog' | 'codegen' | 'selfhost' | 'matrix'>('download');
+  const [activeTab, setActiveTab] = useState<'download' | 'explorer' | 'ai' | 'fastapi' | 'catalog' | 'codegen' | 'selfhost' | 'matrix'>('download');
   const [inputUrl, setInputUrl] = useState('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
   const [loading, setLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // API Explorer sandbox state
+  const [selectedEndpoint, setSelectedEndpoint] = useState<'suggestions' | 'channel' | 'info' | 'multi' | 'invidious'>('suggestions');
+  const [suggestQuery, setSuggestQuery] = useState('nextjs 15 tutorial');
+  const [channelIdInput, setChannelIdInput] = useState('UC_x5XG1OV2P6uZZ5FSM9Ttw');
+  const [multiPlatformUrl, setMultiPlatformUrl] = useState('https://www.tiktok.com/@tiktok/video/7106594312292453678');
+  const [explorerLoading, setExplorerLoading] = useState(false);
+  const [explorerResult, setExplorerResult] = useState<any>(null);
+  const [explorerLatency, setExplorerLatency] = useState<number | null>(null);
 
   // AI Tab state
   const [aiTaskType, setAiTaskType] = useState<'summary' | 'chapters' | 'social' | 'qa'>('summary');
@@ -595,6 +604,17 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
           >
             <ArrowDownToLine className="w-3.5 h-3.5" />
             Download Station
+          </button>
+          <button
+            onClick={() => setActiveTab('explorer')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              activeTab === 'explorer'
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <Boxes className="w-3.5 h-3.5 text-cyan-300" />
+            API Sandbox (8+ APIs)
           </button>
           <button
             onClick={() => setActiveTab('ai')}
@@ -1097,6 +1117,396 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB: API SANDBOX & LIVE EXPLORER */}
+        {activeTab === 'explorer' && (
+          <div className="space-y-6">
+            {/* Header intro */}
+            <div className="rounded-2xl bg-gradient-to-r from-cyan-950/40 via-slate-900 to-indigo-950/40 border border-cyan-500/30 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-xl">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase tracking-wider">
+                    Interactive Sandbox
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">8+ Live Working Endpoints</span>
+                </div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Boxes className="w-5 h-5 text-cyan-400" />
+                  Live API Explorer & Request Sandbox
+                </h2>
+                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                  Test and inspect live requests across all supported APIs: real-time YouTube search suggestions, channel RSS feeds, multi-platform media extractors (TikTok, Twitter/X, Instagram, SoundCloud), and video stream resolvers.
+                </p>
+              </div>
+            </div>
+
+            {/* Sandbox Console Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Column: Endpoint Picker & Parameters */}
+              <div className="lg:col-span-5 space-y-5">
+                <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5 space-y-4">
+                  <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Select API Endpoint:</h3>
+
+                  <div className="space-y-2">
+                    {/* Endpoint 1: Search Suggestions */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('suggestions');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'suggestions'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 font-mono">GET</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/suggestions</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">Real-time YouTube search suggestions (Zero-auth)</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'suggestions' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+
+                    {/* Endpoint 2: Channel Feed */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('channel');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'channel'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 font-mono">GET</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/channel-feed</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">Extract recent channel video uploads via official RSS</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'channel' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+
+                    {/* Endpoint 3: Multi-Platform Media */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('multi');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'multi'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 font-mono">POST</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/multi-platform</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">TikTok, Twitter/X, Instagram, SoundCloud, Reddit</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'multi' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+
+                    {/* Endpoint 4: Video Info & Resolvers */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('info');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'info'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 font-mono">GET</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/info</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">Video metadata, thumbnails, embed & direct resolvers</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'info' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+
+                    {/* Endpoint 5: Invidious */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('invidious');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'invidious'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 font-mono">GET</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/invidious</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">Direct GoogleVideo progressive and adaptive streams</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'invidious' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+                  </div>
+
+                  {/* Dynamic Parameter Configuration */}
+                  <div className="pt-3 border-t border-slate-800 space-y-3">
+                    <h4 className="text-xs font-bold text-slate-300">Request Parameters:</h4>
+
+                    {selectedEndpoint === 'suggestions' && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] text-slate-400 font-mono">Query string (q):</label>
+                        <input
+                          type="text"
+                          value={suggestQuery}
+                          onChange={(e) => setSuggestQuery(e.target.value)}
+                          placeholder="e.g. react full course"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    )}
+
+                    {selectedEndpoint === 'channel' && (
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-mono">Channel ID (channelId):</label>
+                        <input
+                          type="text"
+                          value={channelIdInput}
+                          onChange={(e) => setChannelIdInput(e.target.value)}
+                          placeholder="e.g. UC_x5XG1OV2P6uZZ5FSM9Ttw"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
+                        />
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          <span className="text-[10px] text-slate-500 self-center">Presets:</span>
+                          <button
+                            onClick={() => setChannelIdInput('UC_x5XG1OV2P6uZZ5FSM9Ttw')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            Google Developers
+                          </button>
+                          <button
+                            onClick={() => setChannelIdInput('UCWv7vMbMWH4-V0ZXdmDpPBA')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            Fireship
+                          </button>
+                          <button
+                            onClick={() => setChannelIdInput('UCBcRF18aGmBrD3ac4r5LdBQ')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            MKBHD
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedEndpoint === 'multi' && (
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-mono">Media URL (url):</label>
+                        <input
+                          type="text"
+                          value={multiPlatformUrl}
+                          onChange={(e) => setMultiPlatformUrl(e.target.value)}
+                          placeholder="Paste TikTok, Twitter, Instagram, SoundCloud, or Reddit link..."
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
+                        />
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          <span className="text-[10px] text-slate-500 self-center">Samples:</span>
+                          <button
+                            onClick={() => setMultiPlatformUrl('https://www.tiktok.com/@tiktok/video/7106594312292453678')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            TikTok
+                          </button>
+                          <button
+                            onClick={() => setMultiPlatformUrl('https://twitter.com/NASA/status/1601662972986470400')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            Twitter/X
+                          </button>
+                          <button
+                            onClick={() => setMultiPlatformUrl('https://soundcloud.com/octobersveryown/drake-search-rescue')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            SoundCloud
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {(selectedEndpoint === 'info' || selectedEndpoint === 'invidious') && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] text-slate-400 font-mono">YouTube URL or Video ID:</label>
+                        <input
+                          type="text"
+                          value={inputUrl}
+                          onChange={(e) => setInputUrl(e.target.value)}
+                          placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    )}
+
+                    {/* Send Request Button */}
+                    <button
+                      onClick={async () => {
+                        setExplorerLoading(true);
+                        setExplorerResult(null);
+                        setExplorerLatency(null);
+                        const startTime = performance.now();
+                        try {
+                          let res;
+                          if (selectedEndpoint === 'suggestions') {
+                            res = await fetch(`/api/yt/suggestions?q=${encodeURIComponent(suggestQuery)}`);
+                          } else if (selectedEndpoint === 'channel') {
+                            res = await fetch(`/api/yt/channel-feed?channelId=${encodeURIComponent(channelIdInput)}`);
+                          } else if (selectedEndpoint === 'multi') {
+                            res = await fetch('/api/yt/multi-platform', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ url: multiPlatformUrl }),
+                            });
+                          } else if (selectedEndpoint === 'info') {
+                            res = await fetch(`/api/yt/info?url=${encodeURIComponent(inputUrl)}`);
+                          } else {
+                            const vId = videoInfo ? videoInfo.videoId : 'dQw4w9WgXcQ';
+                            res = await fetch(`/api/yt/invidious?videoId=${vId}`);
+                          }
+
+                          const duration = Math.round(performance.now() - startTime);
+                          setExplorerLatency(duration);
+                          const data = await res.json();
+                          setExplorerResult({ status: res.status, ok: res.ok, data });
+                        } catch (err: any) {
+                          setExplorerResult({ status: 500, ok: false, data: { error: err.message } });
+                        } finally {
+                          setExplorerLoading(false);
+                        }
+                      }}
+                      disabled={explorerLoading}
+                      className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md mt-2 cursor-pointer"
+                    >
+                      {explorerLoading ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          Sending Request...
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3.5 h-3.5" />
+                          Send Live API Request
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Live Response Viewer & cURL */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4 shadow-xl flex flex-col justify-between min-h-[460px]">
+                  <div>
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-bold text-white">Live Response Viewer</span>
+                        {explorerResult && (
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                            explorerResult.ok 
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                              : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                          }`}>
+                            HTTP {explorerResult.status}
+                          </span>
+                        )}
+                        {explorerLatency !== null && (
+                          <span className="text-[11px] text-slate-400 font-mono">
+                            ⚡ {explorerLatency}ms
+                          </span>
+                        )}
+                      </div>
+
+                      {explorerResult && (
+                        <button
+                          onClick={() => copyToClipboard(JSON.stringify(explorerResult.data, null, 2), 'explorer-copy')}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-slate-700"
+                        >
+                          {copiedLink === 'explorer-copy' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                          Copy JSON
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Response display */}
+                    <div className="pt-3">
+                      {explorerLoading && (
+                        <div className="py-24 text-center space-y-3">
+                          <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mx-auto" />
+                          <div className="text-xs text-slate-400">Executing live request across API infrastructure...</div>
+                        </div>
+                      )}
+
+                      {!explorerLoading && explorerResult && (
+                        <div className="relative rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
+                          <pre className="p-4 text-xs font-mono text-cyan-300 overflow-x-auto leading-relaxed max-h-[480px]">
+                            <code>{JSON.stringify(explorerResult.data, null, 2)}</code>
+                          </pre>
+                        </div>
+                      )}
+
+                      {!explorerLoading && !explorerResult && (
+                        <div className="py-24 text-center space-y-2 text-slate-500">
+                          <Boxes className="w-10 h-10 mx-auto text-slate-700" />
+                          <div className="text-xs text-slate-400 font-medium">Select an endpoint on the left and click "Send Live API Request"</div>
+                          <div className="text-[11px] text-slate-600">Inspect real JSON responses, HTTP status, and latency in milliseconds</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Equivalent cURL Command */}
+                  <div className="pt-3 border-t border-slate-800/80">
+                    <div className="text-[11px] text-slate-400 font-mono mb-1.5 flex items-center justify-between">
+                      <span>Equivalent cURL Request:</span>
+                      <button
+                        onClick={() => {
+                          let cmd = '';
+                          if (selectedEndpoint === 'suggestions') cmd = `curl "http://localhost:3000/api/yt/suggestions?q=${encodeURIComponent(suggestQuery)}"`;
+                          else if (selectedEndpoint === 'channel') cmd = `curl "http://localhost:3000/api/yt/channel-feed?channelId=${encodeURIComponent(channelIdInput)}"`;
+                          else if (selectedEndpoint === 'multi') cmd = `curl -X POST http://localhost:3000/api/yt/multi-platform -H "Content-Type: application/json" -d '{"url":"${multiPlatformUrl}"}'`;
+                          else if (selectedEndpoint === 'info') cmd = `curl "http://localhost:3000/api/yt/info?url=${encodeURIComponent(inputUrl)}"`;
+                          else cmd = `curl "http://localhost:3000/api/yt/invidious?videoId=dQw4w9WgXcQ"`;
+                          copyToClipboard(cmd, 'curl-copy');
+                        }}
+                        className="text-cyan-400 hover:text-cyan-300 text-[10px]"
+                      >
+                        {copiedLink === 'curl-copy' ? 'Copied cURL!' : 'Copy cURL'}
+                      </button>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-black text-slate-300 font-mono text-[11px] overflow-x-auto truncate">
+                      {selectedEndpoint === 'suggestions' && `curl "http://localhost:3000/api/yt/suggestions?q=${encodeURIComponent(suggestQuery)}"`}
+                      {selectedEndpoint === 'channel' && `curl "http://localhost:3000/api/yt/channel-feed?channelId=${encodeURIComponent(channelIdInput)}"`}
+                      {selectedEndpoint === 'multi' && `curl -X POST http://localhost:3000/api/yt/multi-platform -H "Content-Type: application/json" -d '{"url":"${multiPlatformUrl}"}'`}
+                      {selectedEndpoint === 'info' && `curl "http://localhost:3000/api/yt/info?url=${encodeURIComponent(inputUrl)}"`}
+                      {selectedEndpoint === 'invidious' && `curl "http://localhost:3000/api/yt/invidious?videoId=dQw4w9WgXcQ"`}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
 
