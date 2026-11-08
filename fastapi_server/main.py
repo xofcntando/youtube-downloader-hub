@@ -245,6 +245,53 @@ def get_channel_feed(channel_id: str = Query("UC_x5XG1OV2P6uZZ5FSM9Ttw")):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/v1/shorts")
+def get_shorts_info(url: str = Query(..., description="YouTube Shorts URL or Video ID")):
+    """Extracts YouTube Shorts vertical media data and download resolver URLs."""
+    ydl_opts = {
+        'skip_download': True,
+        'extractor_args': {'youtube': {'player_client': ['ios', 'android']}}
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            v_id = info.get("id")
+            return {
+                "id": v_id,
+                "title": info.get("title"),
+                "is_short": True,
+                "aspect_ratio": "9:16",
+                "uploader": info.get("uploader"),
+                "thumbnail": f"https://img.youtube.com/vi/{v_id}/maxresdefault.jpg",
+                "direct_download_command": f'yt-dlp -f "best[ext=mp4]" "https://www.youtube.com/shorts/{v_id}"'
+            }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/v1/playlist")
+def get_playlist_items(playlist_id: str = Query("PL4cUxeGkcC9gUgr39Q_yD6v-bSyMwKPUI")):
+    """Extracts items from a public YouTube playlist feed."""
+    import urllib.request, re
+    feed_url = f"https://www.youtube.com/feeds/videos.xml?playlist_id={playlist_id}"
+    try:
+        req = urllib.request.Request(feed_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req) as resp:
+            xml = resp.read().decode('utf-8')
+            entries = re.findall(r'<entry>([\s\S]*?)<\/entry>', xml)[:50]
+            items = []
+            for entry in entries:
+                v_id = re.search(r'<yt:videoId>(.*?)<\/yt:videoId>', entry)
+                title = re.search(r'<title>(.*?)<\/title>', entry)
+                if v_id and title:
+                    items.append({
+                        "videoId": v_id.group(1),
+                        "title": title.group(1),
+                        "url": f"https://www.youtube.com/watch?v={v_id.group(1)}"
+                    })
+            return {"playlistId": playlist_id, "total": len(items), "items": items}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

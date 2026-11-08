@@ -700,6 +700,434 @@ Rules:
     }
   });
 
+  // 10. YouTube Playlist Parser & Video Items API
+  app.get('/api/yt/playlist', async (req, res) => {
+    try {
+      const playlistId = (req.query.playlistId as string) || (req.query.list as string) || 'PL4cUxeGkcC9gUgr39Q_yD6v-bSyMwKPUI';
+      const cleanId = playlistId.replace(/^.*list=/, '').split('&')[0];
+      
+      const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(cleanId)}`;
+      const response = await fetch(feedUrl);
+      
+      if (!response.ok) {
+        return res.status(response.status).json({
+          error: `Playlist feed returned ${response.status}`,
+          playlistId: cleanId,
+          hint: 'Ensure playlist is public'
+        });
+      }
+
+      const xmlText = await response.text();
+      const titleMatch = xmlText.match(/<title>(.*?)<\/title>/);
+      const playlistTitle = titleMatch ? titleMatch[1] : 'YouTube Playlist';
+
+      const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
+      const items = [];
+      let match;
+
+      while ((match = entryRegex.exec(xmlText)) !== null && items.length < 50) {
+        const block = match[1];
+        const vIdMatch = block.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
+        const itemTitleMatch = block.match(/<title>(.*?)<\/title>/);
+        const pubMatch = block.match(/<published>(.*?)<\/published>/);
+
+        if (vIdMatch && itemTitleMatch) {
+          const vId = vIdMatch[1];
+          items.push({
+            position: items.length + 1,
+            videoId: vId,
+            title: itemTitleMatch[1],
+            published: pubMatch ? pubMatch[1] : '',
+            url: `https://www.youtube.com/watch?v=${vId}`,
+            thumbnail: `https://img.youtube.com/vi/${vId}/maxresdefault.jpg`,
+            ytdlpCommand: `yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best" "https://www.youtube.com/watch?v=${vId}"`,
+          });
+        }
+      }
+
+      return res.json({
+        success: true,
+        playlistId: cleanId,
+        playlistTitle,
+        totalItems: items.length,
+        batchDownloadCommand: `yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best" "https://www.youtube.com/playlist?list=${cleanId}"`,
+        items,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 11. Gemini AI: Video Title & SEO Optimization Suite
+  app.post('/api/ai/seo-optimizer', async (req, res) => {
+    try {
+      const { 
+        topic = 'Building modern web applications',
+        currentTitle = '',
+        channelNiche = 'Technology & Software Development'
+      } = req.body;
+
+      const prompt = `You are a world-class YouTube algorithmic growth consultant and SEO specialist.
+Topic / Concept: "${topic}"
+Current Title (if any): "${currentTitle}"
+Channel Niche: "${channelNiche}"
+
+Generate a complete, high-converting SEO & Metadata Package:
+1. 🏆 10 High-CTR Video Titles (divided into 3 categories: Curiosity/Mystery, Direct Actionable Value, and Storytelling)
+2. 📝 SEO Description Template (Optimized with natural keyword placement, chapters placeholder, and subscribe call to action)
+3. 🏷️ Top 25 Ranked YouTube Search Tags (comma-separated, optimized for YouTube search algorithm)
+4. 📈 Projected Click-Through Rate (CTR) advice & audience psychology tips.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      return res.json({
+        success: true,
+        topic,
+        result: response.text || 'No SEO package generated.',
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 12. Gemini AI: YouTube Shorts & 60s Viral Script Generator
+  app.post('/api/ai/shorts-script', async (req, res) => {
+    try {
+      const { 
+        topic = '3 Secret Developer Hacks',
+        tone = 'High energy and fast-paced',
+        duration = 60
+      } = req.body;
+
+      const prompt = `You are a viral YouTube Shorts and TikTok scriptwriter with over 500 million views.
+Write a high-retention, 60-second vertical video script about: "${topic}".
+Tone: ${tone}
+
+Format the script with exact visual directions:
+1. ⚡ 0-3 Seconds: The Unscrollable Hook (Visual on-screen text + Punchy spoken line)
+2. 🎬 3-45 Seconds: Fast-Paced Rapid-Fire Body (Column with [Visual Action / B-roll] on the left and [Voiceover Speech] on the right)
+3. 🔁 45-60 Seconds: Seamless Retention Loop & Payoff (The last sentence must seamlessly loop into the first sentence of the hook!)`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      return res.json({
+        success: true,
+        topic,
+        script: response.text || 'No script generated.',
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 13. Gemini AI: Multilingual Subtitle Translator & Dubbing Assistant
+  app.post('/api/ai/translate-captions', async (req, res) => {
+    try {
+      const { 
+        text = 'Welcome to this YouTube development tutorial.',
+        targetLanguages = ['Spanish', 'French', 'German', 'Japanese']
+      } = req.body;
+
+      const prompt = `You are a professional localization and subtitle translator.
+Translate the following subtitle/caption content into: ${targetLanguages.join(', ')}.
+
+Source Content:
+"${text}"
+
+Provide clear, formatted translations for each language with proper pacing suitable for subtitle files.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      return res.json({
+        success: true,
+        translations: response.text || 'No translation generated.',
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 14. Gemini AI: High-CTR Thumbnail Concept Artist
+  app.post('/api/ai/thumbnail-concept', async (req, res) => {
+    try {
+      const { 
+        videoTitle = 'How I Built a YouTube Downloader in 24 Hours',
+        topic = 'Coding and Software Engineering'
+      } = req.body;
+
+      const prompt = `You are an elite YouTube thumbnail designer for top 0.1% creators (MrBeast, Veritaseum, Ali Abdaal).
+Video Title: "${videoTitle}"
+Niche: "${topic}"
+
+Design 3 distinct, high-CTR thumbnail concepts that stand out on mobile screens:
+For each concept, specify:
+1. 🎨 The Visual Composition (Subject position, background contrast, depth)
+2. 🔤 On-Screen Text (Maximum 2-3 high-impact words only)
+3. 🌈 Color Harmony (Main background color vs focal point accent color)
+4. 🤖 Prompt for Image Generator (Ready-to-use prompt for Midjourney / Gemini Imagen)`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      return res.json({
+        success: true,
+        videoTitle,
+        concepts: response.text || 'No thumbnail concepts generated.',
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 15. YouTube Shorts Dedicated API
+  app.get('/api/yt/shorts', async (req, res) => {
+    try {
+      const urlQuery = (req.query.url as string) || '';
+      const videoIdQuery = (req.query.videoId as string) || '';
+      const videoId = extractVideoId(videoIdQuery || urlQuery);
+
+      if (!videoId) {
+        return res.status(400).json({
+          error: 'Missing or invalid YouTube Shorts URL or ID.',
+          example: 'https://www.youtube.com/shorts/5v2Xg7e_4zY'
+        });
+      }
+
+      const shortsUrl = `https://www.youtube.com/shorts/${videoId}`;
+      const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      
+      let title = 'YouTube Short';
+      let author = 'YouTube Creator';
+      try {
+        const oembed = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(watchUrl)}`);
+        if (oembed.ok) {
+          const data = await oembed.json();
+          if (data.title) title = data.title;
+          if (data.author_name) author = data.author_name;
+        }
+      } catch (e) {
+        console.warn('Shorts oembed fallback:', e);
+      }
+
+      return res.json({
+        success: true,
+        isShort: true,
+        videoId,
+        title,
+        author,
+        aspectRatio: '9:16',
+        shortsUrl,
+        watchUrl,
+        embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1`,
+        verticalThumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        resolvers: {
+          cobalt: `https://cobalt.tools/#${encodeURIComponent(shortsUrl)}`,
+          ssyoutube: `https://www.ssyoutube.com/watch?v=${videoId}`,
+          y2mate: `https://y2mate.is/watch?v=${videoId}`
+        },
+        ytdlpCommand: `yt-dlp -f "best[ext=mp4]" "${shortsUrl}"`
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 16. YouTube Chapters & Timestamps Parser API
+  app.post('/api/yt/chapters-parser', async (req, res) => {
+    try {
+      const { description = '' } = req.body;
+      const lines = description.split('\n');
+      const timestampRegex = /(?:(\d{1,2}):)?(\d{1,2}):(\d{2})/;
+      const chapters: Array<{ timestamp: string; seconds: number; title: string }> = [];
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        const match = line.match(timestampRegex);
+        if (match) {
+          const hours = match[1] ? parseInt(match[1], 10) : 0;
+          const minutes = parseInt(match[2], 10);
+          const seconds = parseInt(match[3], 10);
+          const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+          const cleanTitle = line.replace(match[0], '').replace(/^[\s\-–—:]+/, '').trim();
+          chapters.push({
+            timestamp: match[0],
+            seconds: totalSeconds,
+            title: cleanTitle || `Chapter ${chapters.length + 1}`
+          });
+        }
+      }
+
+      return res.json({
+        success: true,
+        count: chapters.length,
+        chapters,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 17. Batch Video Metadata & Resolvers API
+  app.post('/api/yt/batch-info', async (req, res) => {
+    try {
+      const { urls = [] } = req.body;
+      if (!Array.isArray(urls) || urls.length === 0) {
+        return res.status(400).json({ error: 'Provide an array of YouTube URLs (max 10)' });
+      }
+
+      const targetList = urls.slice(0, 10);
+      const results = [];
+
+      for (const item of targetList) {
+        const vId = extractVideoId(item);
+        if (!vId) {
+          results.push({ url: item, valid: false, error: 'Invalid URL' });
+          continue;
+        }
+
+        const standardUrl = `https://www.youtube.com/watch?v=${vId}`;
+        results.push({
+          url: item,
+          valid: true,
+          videoId: vId,
+          standardUrl,
+          thumbnail: `https://img.youtube.com/vi/${vId}/maxresdefault.jpg`,
+          embedUrl: `https://www.youtube.com/embed/${vId}`,
+          resolvers: {
+            cobalt: `https://cobalt.tools/#${encodeURIComponent(standardUrl)}`,
+            ssyoutube: `https://www.ssyoutube.com/watch?v=${vId}`,
+            y2mate: `https://y2mate.is/watch?v=${vId}`
+          }
+        });
+      }
+
+      return res.json({
+        success: true,
+        total: results.length,
+        videos: results
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 18. Gemini AI: CTR Scorer & Clickability Doctor
+  app.post('/api/ai/ctr-scorer', async (req, res) => {
+    try {
+      const { title = 'How to code', topic = 'Programming' } = req.body;
+
+      const prompt = `You are a YouTube viral analytics engine.
+Analyze this video title and concept for Click-Through Rate (CTR) potential:
+Title: "${title}"
+Topic / Niche: "${topic}"
+
+Provide an insightful rating and optimization report:
+1. 🎯 CTR Potential Score (0 to 100) with a letter grade (S, A, B, C, D)
+2. 🧠 Psychological Triggers Detected (Curiosity Gap, High Stakes, Urgency, Contrast, Simplicity, Fear of Missing Out)
+3. ⚠️ Weaknesses / Audience Drop Factors (Why a casual viewer might scroll past)
+4. 🚀 5 Upgraded A/B Test Titles (guaranteed to deliver +30% higher CTR)`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      return res.json({
+        success: true,
+        title,
+        evaluation: response.text || 'No CTR evaluation generated.',
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 19. Gemini AI: Video to Full Blog / SEO Article Converter
+  app.post('/api/ai/video-to-article', async (req, res) => {
+    try {
+      const { 
+        title = 'Building scalable APIs',
+        notes = 'FastAPI, yt-dlp, and modern asynchronous architecture',
+        tone = 'Technical yet approachable'
+      } = req.body;
+
+      const prompt = `You are an elite technical content marketer and SEO copywriter.
+Convert this video concept into an in-depth, high-ranking, 1200+ word SEO blog article.
+Video Title: "${title}"
+Key Notes / Outline: "${notes}"
+Tone: ${tone}
+
+Structure:
+- Catchy H1 Title
+- Engaging Hook & Problem Statement
+- Key Concept Breakdown (with code or visual callout blocks)
+- Step-by-Step Architecture Guide
+- Pro-Tips & Common Pitfalls to Avoid
+- Comprehensive Summary & FAQ section (3 questions)
+Use rich Markdown with headers, bold text, and bullet lists.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      return res.json({
+        success: true,
+        title,
+        article: response.text || 'No article generated.',
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 20. Gemini AI: Hook Doctor & First 15-Second Retention Surgeon
+  app.post('/api/ai/hook-doctor', async (req, res) => {
+    try {
+      const { hookDraft = 'Hey guys, welcome back to my channel today we are talking about coding.', topic = 'Tech' } = req.body;
+
+      const prompt = `You are a YouTube audience retention surgeon.
+Over 70% of viewers leave in the first 15 seconds if the hook is generic.
+Current Hook Draft: "${hookDraft}"
+Topic: "${topic}"
+
+Provide 5 high-retention alternative hooks categorized by psychology:
+1. ⚡ The Negative / Warning Hook ("Stop doing X right now...")
+2. ❓ The Curiosity Gap Hook ("The one secret nobody tells you...")
+3. 📉 The High-Stakes Story Hook ("I almost ruined my server until...")
+4. 📊 The Data / Shock Stat Hook ("92% of developers fail this...")
+5. 🏎️ The In-Medias-Res Action Hook (Zero intro, instant payoff)
+
+For each hook, include:
+- The exact spoken script (under 12 words)
+- On-screen visual direction (what footage or sound effect plays)`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      return res.json({
+        success: true,
+        hookDraft,
+        cures: response.text || 'No hook cures generated.',
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // Vite middleware in dev, static files in production
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(__dirname, 'dist')));

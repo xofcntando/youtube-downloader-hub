@@ -263,20 +263,68 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // API Explorer sandbox state
-  const [selectedEndpoint, setSelectedEndpoint] = useState<'suggestions' | 'channel' | 'info' | 'multi' | 'invidious'>('suggestions');
+  const [selectedEndpoint, setSelectedEndpoint] = useState<'suggestions' | 'channel' | 'playlist' | 'shorts' | 'multi' | 'batch' | 'info' | 'invidious'>('suggestions');
   const [suggestQuery, setSuggestQuery] = useState('nextjs 15 tutorial');
   const [channelIdInput, setChannelIdInput] = useState('UC_x5XG1OV2P6uZZ5FSM9Ttw');
+  const [playlistIdInput, setPlaylistIdInput] = useState('PL4cUxeGkcC9gUgr39Q_yD6v-bSyMwKPUI');
+  const [shortsUrlInput, setShortsUrlInput] = useState('https://www.youtube.com/shorts/5v2Xg7e_4zY');
+  const [batchUrlsInput, setBatchUrlsInput] = useState('https://www.youtube.com/watch?v=dQw4w9WgXcQ\nhttps://www.youtube.com/watch?v=jfKfPfyJRdk\nhttps://www.youtube.com/watch?v=aqz-KE-bpKQ');
   const [multiPlatformUrl, setMultiPlatformUrl] = useState('https://www.tiktok.com/@tiktok/video/7106594312292453678');
   const [explorerLoading, setExplorerLoading] = useState(false);
   const [explorerResult, setExplorerResult] = useState<any>(null);
   const [explorerLatency, setExplorerLatency] = useState<number | null>(null);
 
-  // AI Tab state
+  // AI Creative Suite sub-tool tab state
+  const [aiActiveTool, setAiActiveTool] = useState<'insights' | 'seo' | 'shorts' | 'thumbnail' | 'translate' | 'scorer' | 'article' | 'hook' | 'codegen'>('insights');
+
+  // AI Insights State
   const [aiTaskType, setAiTaskType] = useState<'summary' | 'chapters' | 'social' | 'qa'>('summary');
   const [aiQuestion, setAiQuestion] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // AI SEO State
+  const [aiSeoTopic, setAiSeoTopic] = useState('Building fullstack apps with Next.js 15 and AI');
+  const [aiSeoTitle, setAiSeoTitle] = useState('Next.js 15 Full Tutorial for Beginners');
+  const [aiSeoNiche, setAiSeoNiche] = useState('Web Development & Software Engineering');
+  const [aiSeoResult, setAiSeoResult] = useState<string | null>(null);
+  const [aiSeoLoading, setAiSeoLoading] = useState(false);
+
+  // AI Shorts State
+  const [aiShortsTopic, setAiShortsTopic] = useState('3 VS Code extensions you will regret not using sooner');
+  const [aiShortsTone, setAiShortsTone] = useState('High energy, fast-paced, punchy tech tips');
+  const [aiShortsResult, setAiShortsResult] = useState<string | null>(null);
+  const [aiShortsLoading, setAiShortsLoading] = useState(false);
+
+  // AI Thumbnail State
+  const [aiThumbTitle, setAiThumbTitle] = useState('I Built a YouTube Downloader in 24 Hours');
+  const [aiThumbTopic, setAiThumbTopic] = useState('Coding & Software Engineering');
+  const [aiThumbResult, setAiThumbResult] = useState<string | null>(null);
+  const [aiThumbLoading, setAiThumbLoading] = useState(false);
+
+  // AI Translate State
+  const [aiTranslateText, setAiTranslateText] = useState('In this video, we will learn how to bypass YouTube bot blocks and build high-performance downloading APIs.');
+  const [aiTranslateResult, setAiTranslateResult] = useState<string | null>(null);
+  const [aiTranslateLoading, setAiTranslateLoading] = useState(false);
+
+  // AI CTR Scorer State
+  const [aiCtrTitle, setAiCtrTitle] = useState('How to build APIs with Python');
+  const [aiCtrTopic, setAiCtrTopic] = useState('Programming');
+  const [aiCtrResult, setAiCtrResult] = useState<string | null>(null);
+  const [aiCtrLoading, setAiCtrLoading] = useState(false);
+
+  // AI Article State
+  const [aiArticleTitle, setAiArticleTitle] = useState('Complete Guide to Building Cookie-Free YouTube Downloader Services');
+  const [aiArticleNotes, setAiArticleNotes] = useState('FastAPI, yt-dlp, mobile client emulation, Docker containerization, and rate limit prevention');
+  const [aiArticleResult, setAiArticleResult] = useState<string | null>(null);
+  const [aiArticleLoading, setAiArticleLoading] = useState(false);
+
+  // AI Hook Doctor State
+  const [aiHookDraft, setAiHookDraft] = useState('Hey guys, welcome back to my channel today we are talking about coding.');
+  const [aiHookTopic, setAiHookTopic] = useState('Tech');
+  const [aiHookResult, setAiHookResult] = useState<string | null>(null);
+  const [aiHookLoading, setAiHookLoading] = useState(false);
 
   // AI Code Assistant state
   const [aiCodePrompt, setAiCodePrompt] = useState('Build an asynchronous batch YouTube audio downloader with webhook notification');
@@ -1195,7 +1243,51 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                       <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'channel' ? 'text-cyan-400' : 'text-slate-600'}`} />
                     </button>
 
-                    {/* Endpoint 3: Multi-Platform Media */}
+                    {/* Endpoint 3: Playlist Parser */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('playlist');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'playlist'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 font-mono">GET</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/playlist</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">Parse full YouTube playlist feeds into video items</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'playlist' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+
+                    {/* Endpoint 4: YouTube Shorts Dedicated */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('shorts');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'shorts'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 font-mono">GET</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/shorts</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">Dedicated 9:16 Shorts metadata & vertical media downloader</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'shorts' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+
+                    {/* Endpoint 5: Multi-Platform Media */}
                     <button
                       onClick={() => {
                         setSelectedEndpoint('multi');
@@ -1217,7 +1309,29 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                       <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'multi' ? 'text-cyan-400' : 'text-slate-600'}`} />
                     </button>
 
-                    {/* Endpoint 4: Video Info & Resolvers */}
+                    {/* Endpoint 6: Batch Video Info */}
+                    <button
+                      onClick={() => {
+                        setSelectedEndpoint('batch');
+                        setExplorerResult(null);
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        selectedEndpoint === 'batch'
+                          ? 'bg-cyan-950/50 border-cyan-500/80 text-white shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 font-mono">POST</span>
+                          <span className="text-xs font-bold font-mono">/api/yt/batch-info</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">Bulk query up to 10 YouTube video URLs simultaneously</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'batch' ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    </button>
+
+                    {/* Endpoint 7: Video Info & Resolvers */}
                     <button
                       onClick={() => {
                         setSelectedEndpoint('info');
@@ -1239,7 +1353,7 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                       <ChevronRight className={`w-4 h-4 ${selectedEndpoint === 'info' ? 'text-cyan-400' : 'text-slate-600'}`} />
                     </button>
 
-                    {/* Endpoint 5: Invidious */}
+                    {/* Endpoint 8: Invidious */}
                     <button
                       onClick={() => {
                         setSelectedEndpoint('invidious');
@@ -1313,6 +1427,47 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                       </div>
                     )}
 
+                    {selectedEndpoint === 'playlist' && (
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-mono">Playlist ID (playlistId):</label>
+                        <input
+                          type="text"
+                          value={playlistIdInput}
+                          onChange={(e) => setPlaylistIdInput(e.target.value)}
+                          placeholder="e.g. PL4cUxeGkcC9gUgr39Q_yD6v-bSyMwKPUI"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
+                        />
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          <span className="text-[10px] text-slate-500 self-center">Presets:</span>
+                          <button
+                            onClick={() => setPlaylistIdInput('PL4cUxeGkcC9gUgr39Q_yD6v-bSyMwKPUI')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            Net Ninja Tutorial
+                          </button>
+                          <button
+                            onClick={() => setPlaylistIdInput('PL0Zuz27SZ-6PrE9srvEn8jSXX5gBm9MZz')}
+                            className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white"
+                          >
+                            Dave Gray Node.js
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedEndpoint === 'shorts' && (
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-mono">YouTube Shorts URL:</label>
+                        <input
+                          type="text"
+                          value={shortsUrlInput}
+                          onChange={(e) => setShortsUrlInput(e.target.value)}
+                          placeholder="https://www.youtube.com/shorts/..."
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    )}
+
                     {selectedEndpoint === 'multi' && (
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-mono">Media URL (url):</label>
@@ -1347,6 +1502,18 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                       </div>
                     )}
 
+                    {selectedEndpoint === 'batch' && (
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-mono">Batch YouTube URLs (1 per line, max 10):</label>
+                        <textarea
+                          rows={3}
+                          value={batchUrlsInput}
+                          onChange={(e) => setBatchUrlsInput(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    )}
+
                     {(selectedEndpoint === 'info' || selectedEndpoint === 'invidious') && (
                       <div className="space-y-1">
                         <label className="text-[11px] text-slate-400 font-mono">YouTube URL or Video ID:</label>
@@ -1373,11 +1540,22 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                             res = await fetch(`/api/yt/suggestions?q=${encodeURIComponent(suggestQuery)}`);
                           } else if (selectedEndpoint === 'channel') {
                             res = await fetch(`/api/yt/channel-feed?channelId=${encodeURIComponent(channelIdInput)}`);
+                          } else if (selectedEndpoint === 'playlist') {
+                            res = await fetch(`/api/yt/playlist?playlistId=${encodeURIComponent(playlistIdInput)}`);
+                          } else if (selectedEndpoint === 'shorts') {
+                            res = await fetch(`/api/yt/shorts?url=${encodeURIComponent(shortsUrlInput)}`);
                           } else if (selectedEndpoint === 'multi') {
                             res = await fetch('/api/yt/multi-platform', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ url: multiPlatformUrl }),
+                            });
+                          } else if (selectedEndpoint === 'batch') {
+                            const urls = batchUrlsInput.split('\n').map(s => s.trim()).filter(Boolean);
+                            res = await fetch('/api/yt/batch-info', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ urls }),
                             });
                           } else if (selectedEndpoint === 'info') {
                             res = await fetch(`/api/yt/info?url=${encodeURIComponent(inputUrl)}`);
@@ -1485,7 +1663,10 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                           let cmd = '';
                           if (selectedEndpoint === 'suggestions') cmd = `curl "http://localhost:3000/api/yt/suggestions?q=${encodeURIComponent(suggestQuery)}"`;
                           else if (selectedEndpoint === 'channel') cmd = `curl "http://localhost:3000/api/yt/channel-feed?channelId=${encodeURIComponent(channelIdInput)}"`;
+                          else if (selectedEndpoint === 'playlist') cmd = `curl "http://localhost:3000/api/yt/playlist?playlistId=${encodeURIComponent(playlistIdInput)}"`;
+                          else if (selectedEndpoint === 'shorts') cmd = `curl "http://localhost:3000/api/yt/shorts?url=${encodeURIComponent(shortsUrlInput)}"`;
                           else if (selectedEndpoint === 'multi') cmd = `curl -X POST http://localhost:3000/api/yt/multi-platform -H "Content-Type: application/json" -d '{"url":"${multiPlatformUrl}"}'`;
+                          else if (selectedEndpoint === 'batch') cmd = `curl -X POST http://localhost:3000/api/yt/batch-info -H "Content-Type: application/json" -d '{"urls":["https://www.youtube.com/watch?v=dQw4w9WgXcQ"]}'`;
                           else if (selectedEndpoint === 'info') cmd = `curl "http://localhost:3000/api/yt/info?url=${encodeURIComponent(inputUrl)}"`;
                           else cmd = `curl "http://localhost:3000/api/yt/invidious?videoId=dQw4w9WgXcQ"`;
                           copyToClipboard(cmd, 'curl-copy');
@@ -1498,7 +1679,10 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
                     <div className="p-2.5 rounded-lg bg-black text-slate-300 font-mono text-[11px] overflow-x-auto truncate">
                       {selectedEndpoint === 'suggestions' && `curl "http://localhost:3000/api/yt/suggestions?q=${encodeURIComponent(suggestQuery)}"`}
                       {selectedEndpoint === 'channel' && `curl "http://localhost:3000/api/yt/channel-feed?channelId=${encodeURIComponent(channelIdInput)}"`}
+                      {selectedEndpoint === 'playlist' && `curl "http://localhost:3000/api/yt/playlist?playlistId=${encodeURIComponent(playlistIdInput)}"`}
+                      {selectedEndpoint === 'shorts' && `curl "http://localhost:3000/api/yt/shorts?url=${encodeURIComponent(shortsUrlInput)}"`}
                       {selectedEndpoint === 'multi' && `curl -X POST http://localhost:3000/api/yt/multi-platform -H "Content-Type: application/json" -d '{"url":"${multiPlatformUrl}"}'`}
+                      {selectedEndpoint === 'batch' && `curl -X POST http://localhost:3000/api/yt/batch-info -H "Content-Type: application/json" -d '{"urls":[...]}'`}
                       {selectedEndpoint === 'info' && `curl "http://localhost:3000/api/yt/info?url=${encodeURIComponent(inputUrl)}"`}
                       {selectedEndpoint === 'invidious' && `curl "http://localhost:3000/api/yt/invidious?videoId=dQw4w9WgXcQ"`}
                     </div>
@@ -1546,300 +1730,754 @@ fetch('https://www.youtube.com/oembed?url=${encodeURIComponent(vUrl)}&format=jso
               )}
             </div>
 
-            {/* SECTION 1: Video Intelligence & Repurposing */}
-            <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6 shadow-xl">
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-400" />
-                  1. Video Insights & Repurposing Engine
-                </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Select an AI task to analyze <strong>{videoInfo ? `"${videoInfo.title.slice(0, 50)}..."` : 'the active video'}</strong>:
-                </p>
-              </div>
-
-              {/* Task Mode Selector */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {/* AI Tool Sub-Navigation Bar */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800">
+              {[
+                { id: 'insights', label: '🎯 Video Insights', desc: 'Summary, Chapters & Social' },
+                { id: 'seo', label: '🏆 SEO & 10x Titles', desc: 'CTR Titles, Tags & Description' },
+                { id: 'shorts', label: '⚡ 60s Shorts Script', desc: 'Viral Hooks & Retention Loops' },
+                { id: 'thumbnail', label: '🎨 Thumbnail Artist', desc: '3 Visual Compositions & Prompts' },
+                { id: 'translate', label: '🌐 Subtitle Translator', desc: 'Multilingual Dubbing' },
+                { id: 'scorer', label: '🧠 CTR & Hook Doctor', desc: 'Scorecard & Drop-off Fixes' },
+                { id: 'article', label: '📝 Video to Blog', desc: '1200+ Word SEO Article' },
+                { id: 'codegen', label: '💻 AI Code Pipeline', desc: 'Custom Downloader APIs' },
+              ].map(tool => (
                 <button
-                  onClick={() => setAiTaskType('summary')}
-                  className={`p-3 rounded-xl text-left border transition-all ${
-                    aiTaskType === 'summary'
-                      ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  key={tool.id}
+                  onClick={() => setAiActiveTool(tool.id as any)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
+                    aiActiveTool === tool.id
+                      ? 'bg-purple-600 border-purple-500 text-white shadow-md shadow-purple-600/30'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <div className="font-semibold text-xs text-purple-300 flex items-center gap-1.5 mb-1">
-                    🎯 Executive Summary
-                  </div>
-                  <div className="text-[11px] text-slate-400">TL;DR, core insights & key takeaways</div>
+                  <div>{tool.label}</div>
+                  <div className={`text-[10px] font-normal ${aiActiveTool === tool.id ? 'text-purple-200' : 'text-slate-400'}`}>{tool.desc}</div>
                 </button>
-
-                <button
-                  onClick={() => setAiTaskType('chapters')}
-                  className={`p-3 rounded-xl text-left border transition-all ${
-                    aiTaskType === 'chapters'
-                      ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <div className="font-semibold text-xs text-indigo-300 flex items-center gap-1.5 mb-1">
-                    ⏱️ Video Chapters
-                  </div>
-                  <div className="text-[11px] text-slate-400">Timestamped topics & outline</div>
-                </button>
-
-                <button
-                  onClick={() => setAiTaskType('social')}
-                  className={`p-3 rounded-xl text-left border transition-all ${
-                    aiTaskType === 'social'
-                      ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <div className="font-semibold text-xs text-amber-300 flex items-center gap-1.5 mb-1">
-                    🚀 Social Repurpose
-                  </div>
-                  <div className="text-[11px] text-slate-400">X Thread + LinkedIn + Newsletter</div>
-                </button>
-
-                <button
-                  onClick={() => setAiTaskType('qa')}
-                  className={`p-3 rounded-xl text-left border transition-all ${
-                    aiTaskType === 'qa'
-                      ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <div className="font-semibold text-xs text-emerald-300 flex items-center gap-1.5 mb-1">
-                    💬 Ask AI Question
-                  </div>
-                  <div className="text-[11px] text-slate-400">Custom Q&A on video concepts</div>
-                </button>
-              </div>
-
-              {/* Custom Q&A Input (if qa is active) */}
-              {aiTaskType === 'qa' && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Your Question about this video:</label>
-                  <input
-                    type="text"
-                    value={aiQuestion}
-                    onChange={(e) => setAiQuestion(e.target.value)}
-                    placeholder="e.g. What are the key architectural trade-offs explained in this video?"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none"
-                  />
-                </div>
-              )}
-
-              {/* Action Button */}
-              <button
-                onClick={async () => {
-                  if (!videoInfo) return;
-                  setAiLoading(true);
-                  setAiError(null);
-                  try {
-                    const res = await fetch('/api/ai/video-insights', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        title: videoInfo.title,
-                        author: videoInfo.author,
-                        videoId: videoInfo.videoId,
-                        taskType: aiTaskType,
-                        question: aiQuestion,
-                      }),
-                    });
-                    const data = await res.json();
-                    if (!res.ok || !data.success) {
-                      throw new Error(data.error || 'Failed to generate AI insights');
-                    }
-                    setAiResult(data.result);
-                  } catch (err: any) {
-                    setAiError(err.message || 'AI request error');
-                  } finally {
-                    setAiLoading(false);
-                  }
-                }}
-                disabled={aiLoading}
-                className="w-full py-3.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/25 cursor-pointer"
-              >
-                {aiLoading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Generating with Gemini 3.8 Flash...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 text-purple-200" />
-                    Generate {aiTaskType === 'summary' ? 'Summary' : aiTaskType === 'chapters' ? 'Chapters' : aiTaskType === 'social' ? 'Social Content' : 'Answer'} with Gemini
-                  </>
-                )}
-              </button>
-
-              {aiError && (
-                <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-                  <span>{aiError}</span>
-                </div>
-              )}
-
-              {/* Result Output Card */}
-              {aiResult && (
-                <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden shadow-lg">
-                  <div className="bg-slate-900/80 px-4 py-2.5 flex items-center justify-between border-b border-slate-800">
-                    <span className="text-xs font-semibold text-purple-300 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      Gemini 3.8 Flash Analysis Result
-                    </span>
-                    <button
-                      onClick={() => copyToClipboard(aiResult, 'ai-res')}
-                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-slate-700"
-                    >
-                      {copiedLink === 'ai-res' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      {copiedLink === 'ai-res' ? 'Copied!' : 'Copy Result'}
-                    </button>
-                  </div>
-                  <div className="p-5 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">
-                    {aiResult}
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
 
-            {/* SECTION 2: AI Code Assistant for Custom YouTube APIs */}
-            <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Code2 className="w-5 h-5 text-indigo-400" />
-                  2. AI Code Assistant: Custom YouTube API & Pipeline Generator
-                </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Ask Gemini to code custom YouTube downloading pipelines, webhook servers, batch scrapers, or Telegram bots in any language:
-                </p>
-              </div>
+            {/* TOOL 1: Video Insights & Repurposing */}
+            {aiActiveTool === 'insights' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                    Video Insights & Repurposing Engine
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Select an AI task to analyze <strong>{videoInfo ? `"${videoInfo.title.slice(0, 50)}..."` : 'the active video'}</strong>:
+                  </p>
+                </div>
 
-              {/* Preset prompts */}
-              <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-slate-500 font-medium self-center mr-1">Presets:</span>
-                {[
-                  'FastAPI batch downloader with async queue and Redis',
-                  'Node.js Express stream proxy with WebSockets progress',
-                  'Telegram bot in Python that converts YouTube links to MP3',
-                  'Go microservice downloading YouTube audio and uploading to AWS S3',
-                ].map((preset, idx) => (
+                {/* Task Mode Selector */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <button
-                    key={idx}
-                    onClick={() => setAiCodePrompt(preset)}
-                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors"
+                    onClick={() => setAiTaskType('summary')}
+                    className={`p-3 rounded-xl text-left border transition-all ${
+                      aiTaskType === 'summary'
+                        ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
                   >
-                    {preset}
+                    <div className="font-semibold text-xs text-purple-300 flex items-center gap-1.5 mb-1">
+                      🎯 Executive Summary
+                    </div>
+                    <div className="text-[11px] text-slate-400">TL;DR, core insights & key takeaways</div>
                   </button>
-                ))}
+
+                  <button
+                    onClick={() => setAiTaskType('chapters')}
+                    className={`p-3 rounded-xl text-left border transition-all ${
+                      aiTaskType === 'chapters'
+                        ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs text-indigo-300 flex items-center gap-1.5 mb-1">
+                      ⏱️ Video Chapters
+                    </div>
+                    <div className="text-[11px] text-slate-400">Timestamped topics & outline</div>
+                  </button>
+
+                  <button
+                    onClick={() => setAiTaskType('social')}
+                    className={`p-3 rounded-xl text-left border transition-all ${
+                      aiTaskType === 'social'
+                        ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs text-amber-300 flex items-center gap-1.5 mb-1">
+                      🚀 Social Repurpose
+                    </div>
+                    <div className="text-[11px] text-slate-400">X Thread + LinkedIn + Newsletter</div>
+                  </button>
+
+                  <button
+                    onClick={() => setAiTaskType('qa')}
+                    className={`p-3 rounded-xl text-left border transition-all ${
+                      aiTaskType === 'qa'
+                        ? 'bg-purple-950/60 border-purple-500/80 text-white shadow-md'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs text-emerald-300 flex items-center gap-1.5 mb-1">
+                      💬 Ask AI Question
+                    </div>
+                    <div className="text-[11px] text-slate-400">Custom Q&A on video concepts</div>
+                  </button>
+                </div>
+
+                {/* Custom Q&A Input */}
+                {aiTaskType === 'qa' && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Your Question about this video:</label>
+                    <input
+                      type="text"
+                      value={aiQuestion}
+                      onChange={(e) => setAiQuestion(e.target.value)}
+                      placeholder="e.g. What are the key architectural trade-offs explained in this video?"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={async () => {
+                    if (!videoInfo) return;
+                    setAiLoading(true);
+                    setAiError(null);
+                    try {
+                      const res = await fetch('/api/ai/video-insights', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          title: videoInfo.title,
+                          author: videoInfo.author,
+                          videoId: videoInfo.videoId,
+                          taskType: aiTaskType,
+                          question: aiQuestion,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok || !data.success) {
+                        throw new Error(data.error || 'Failed to generate AI insights');
+                      }
+                      setAiResult(data.result);
+                    } catch (err: any) {
+                      setAiError(err.message || 'AI request error');
+                    } finally {
+                      setAiLoading(false);
+                    }
+                  }}
+                  disabled={aiLoading}
+                  className="w-full py-3.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/25 cursor-pointer"
+                >
+                  {aiLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Generating with Gemini 3.8 Flash...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-purple-200" />
+                      Generate {aiTaskType === 'summary' ? 'Summary' : aiTaskType === 'chapters' ? 'Chapters' : aiTaskType === 'social' ? 'Social Content' : 'Answer'} with Gemini
+                    </>
+                  )}
+                </button>
+
+                {aiError && (
+                  <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>{aiError}</span>
+                  </div>
+                )}
+
+                {aiResult && (
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden shadow-lg">
+                    <div className="bg-slate-900/80 px-4 py-2.5 flex items-center justify-between border-b border-slate-800">
+                      <span className="text-xs font-semibold text-purple-300 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        Gemini 3.8 Flash Analysis Result
+                      </span>
+                      <button
+                        onClick={() => copyToClipboard(aiResult, 'ai-res')}
+                        className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-slate-700"
+                      >
+                        {copiedLink === 'ai-res' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedLink === 'ai-res' ? 'Copied!' : 'Copy Result'}
+                      </button>
+                    </div>
+                    <div className="p-5 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">
+                      {aiResult}
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
 
-              {/* Input & Config */}
-              <div className="space-y-3">
-                <textarea
-                  value={aiCodePrompt}
-                  onChange={(e) => setAiCodePrompt(e.target.value)}
-                  rows={3}
-                  placeholder="Describe your custom YouTube API requirement in detail..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-indigo-500"
-                />
+            {/* TOOL 2: SEO & 10x Title Package */}
+            {aiActiveTool === 'seo' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                    YouTube SEO & 10x High-CTR Title Optimizer
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Generate 10 high-CTR video titles, SEO description template, and 25 ranked algorithm search tags.
+                  </p>
+                </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">Language</label>
-                    <select
-                      value={aiCodeLang}
-                      onChange={(e) => setAiCodeLang(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200"
-                    >
-                      <option value="python">Python</option>
-                      <option value="typescript">TypeScript</option>
-                      <option value="nodejs">Node.js (JavaScript)</option>
-                      <option value="go">Go (Golang)</option>
-                      <option value="bash">Bash / Shell</option>
-                    </select>
+                    <label className="text-[11px] text-slate-400 block mb-1">Topic or Concept:</label>
+                    <input
+                      type="text"
+                      value={aiSeoTopic}
+                      onChange={(e) => setAiSeoTopic(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
                   </div>
-
                   <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">Framework</label>
-                    <select
-                      value={aiCodeFramework}
-                      onChange={(e) => setAiCodeFramework(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200"
-                    >
-                      <option value="fastapi">FastAPI</option>
-                      <option value="express">Express</option>
-                      <option value="flask">Flask</option>
-                      <option value="standalone">Standalone Script</option>
-                      <option value="docker">Dockerized App</option>
-                    </select>
+                    <label className="text-[11px] text-slate-400 block mb-1">Current Title (Optional):</label>
+                    <input
+                      type="text"
+                      value={aiSeoTitle}
+                      onChange={(e) => setAiSeoTitle(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
                   </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Channel Niche:</label>
+                    <input
+                      type="text"
+                      value={aiSeoNiche}
+                      onChange={(e) => setAiSeoNiche(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
+                  </div>
+                </div>
 
-                  <div className="sm:col-span-2 flex items-end">
+                <button
+                  onClick={async () => {
+                    setAiSeoLoading(true);
+                    try {
+                      const res = await fetch('/api/ai/seo-optimizer', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          topic: aiSeoTopic,
+                          currentTitle: aiSeoTitle,
+                          channelNiche: aiSeoNiche,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.result) setAiSeoResult(data.result);
+                    } catch (err: any) {
+                      console.error(err);
+                    } finally {
+                      setAiSeoLoading(false);
+                    }
+                  }}
+                  disabled={aiSeoLoading}
+                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md"
+                >
+                  {aiSeoLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  {aiSeoLoading ? 'Analyzing Algorithm with Gemini...' : 'Generate 10x SEO & Title Package'}
+                </button>
+
+                {aiSeoResult && (
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-5 whitespace-pre-wrap text-xs text-slate-200 leading-relaxed max-h-[500px] overflow-y-auto">
+                    {aiSeoResult}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TOOL 3: 60s Shorts & TikTok Scriptwriter */}
+            {aiActiveTool === 'shorts' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-amber-400" />
+                    60-Second Viral YouTube Shorts & TikTok Scriptwriter
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Structured with 0-3s unscrollable hook, rapid visual b-roll directions, and retention loop payoff.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Shorts Topic:</label>
+                    <input
+                      type="text"
+                      value={aiShortsTopic}
+                      onChange={(e) => setAiShortsTopic(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Tone & Pacing:</label>
+                    <input
+                      type="text"
+                      value={aiShortsTone}
+                      onChange={(e) => setAiShortsTone(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    setAiShortsLoading(true);
+                    try {
+                      const res = await fetch('/api/ai/shorts-script', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ topic: aiShortsTopic, tone: aiShortsTone }),
+                      });
+                      const data = await res.json();
+                      if (data.script) setAiShortsResult(data.script);
+                    } catch (err: any) {
+                      console.error(err);
+                    } finally {
+                      setAiShortsLoading(false);
+                    }
+                  }}
+                  disabled={aiShortsLoading}
+                  className="w-full py-3 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md"
+                >
+                  {aiShortsLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                  {aiShortsLoading ? 'Writing Viral Script...' : 'Generate 60s Retention-Loop Script'}
+                </button>
+
+                {aiShortsResult && (
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-5 whitespace-pre-wrap text-xs text-slate-200 leading-relaxed max-h-[500px] overflow-y-auto">
+                    {aiShortsResult}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TOOL 4: High-CTR Thumbnail Concept Artist */}
+            {aiActiveTool === 'thumbnail' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-rose-400" />
+                    High-CTR Thumbnail Concept Designer
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Generates 3 mobile-optimized visual layouts, high-contrast focal points, 2-3 word on-screen text, and Midjourney/Imagen prompts.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Video Title:</label>
+                    <input
+                      type="text"
+                      value={aiThumbTitle}
+                      onChange={(e) => setAiThumbTitle(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Niche / Topic:</label>
+                    <input
+                      type="text"
+                      value={aiThumbTopic}
+                      onChange={(e) => setAiThumbTopic(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    setAiThumbLoading(true);
+                    try {
+                      const res = await fetch('/api/ai/thumbnail-concept', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ videoTitle: aiThumbTitle, topic: aiThumbTopic }),
+                      });
+                      const data = await res.json();
+                      if (data.concepts) setAiThumbResult(data.concepts);
+                    } catch (err: any) {
+                      console.error(err);
+                    } finally {
+                      setAiThumbLoading(false);
+                    }
+                  }}
+                  disabled={aiThumbLoading}
+                  className="w-full py-3 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md"
+                >
+                  {aiThumbLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                  {aiThumbLoading ? 'Designing Thumbnail Concepts...' : 'Generate 3 High-CTR Thumbnail Concepts'}
+                </button>
+
+                {aiThumbResult && (
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-5 whitespace-pre-wrap text-xs text-slate-200 leading-relaxed max-h-[500px] overflow-y-auto">
+                    {aiThumbResult}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TOOL 5: Multilingual Subtitle Translator */}
+            {aiActiveTool === 'translate' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-emerald-400" />
+                    Multilingual Subtitle & Caption Translator
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Translate captions and transcripts into Spanish, French, German, Japanese, Portuguese, and Arabic with subtitle timing formatting.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-slate-400 block mb-1">Source Text / Transcript:</label>
+                  <textarea
+                    rows={4}
+                    value={aiTranslateText}
+                    onChange={(e) => setAiTranslateText(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white"
+                  />
+                </div>
+
+                <button
+                  onClick={async () => {
+                    setAiTranslateLoading(true);
+                    try {
+                      const res = await fetch('/api/ai/translate-captions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: aiTranslateText }),
+                      });
+                      const data = await res.json();
+                      if (data.translations) setAiTranslateResult(data.translations);
+                    } catch (err: any) {
+                      console.error(err);
+                    } finally {
+                      setAiTranslateLoading(false);
+                    }
+                  }}
+                  disabled={aiTranslateLoading}
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md"
+                >
+                  {aiTranslateLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+                  {aiTranslateLoading ? 'Translating with Gemini...' : 'Translate into 5 Global Languages'}
+                </button>
+
+                {aiTranslateResult && (
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-5 whitespace-pre-wrap text-xs text-slate-200 leading-relaxed max-h-[500px] overflow-y-auto">
+                    {aiTranslateResult}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TOOL 6: CTR Scorer & Hook Retention Doctor */}
+            {aiActiveTool === 'scorer' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-cyan-400" />
+                    CTR Clickability Scorer & Hook Retention Doctor
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Scores your video title 0-100, detects cognitive hooks, and provides 5 retention-engineered hook cures for the first 15 seconds.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                    <div className="font-semibold text-xs text-white">1. CTR Scorecard Engine</div>
+                    <input
+                      type="text"
+                      value={aiCtrTitle}
+                      onChange={(e) => setAiCtrTitle(e.target.value)}
+                      placeholder="Title to evaluate"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white"
+                    />
                     <button
                       onClick={async () => {
-                        setAiCodeLoading(true);
+                        setAiCtrLoading(true);
                         try {
-                          const res = await fetch('/api/ai/code-assistant', {
+                          const res = await fetch('/api/ai/ctr-scorer', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              prompt: aiCodePrompt,
-                              language: aiCodeLang,
-                              framework: aiCodeFramework,
-                            }),
+                            body: JSON.stringify({ title: aiCtrTitle, topic: aiCtrTopic }),
                           });
                           const data = await res.json();
-                          if (data.code) {
-                            setAiCodeResult(data.code);
-                          }
+                          if (data.evaluation) setAiCtrResult(data.evaluation);
                         } catch (err: any) {
                           console.error(err);
                         } finally {
-                          setAiCodeLoading(false);
+                          setAiCtrLoading(false);
                         }
                       }}
-                      disabled={aiCodeLoading}
-                      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                      disabled={aiCtrLoading}
+                      className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-all"
                     >
-                      {aiCodeLoading ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          Coding with Gemini...
-                        </>
-                      ) : (
-                        <>
-                          <Code2 className="w-3.5 h-3.5" />
-                          Generate Custom API Code
-                        </>
-                      )}
+                      {aiCtrLoading ? 'Evaluating...' : 'Score Title CTR (0-100)'}
                     </button>
+                    {aiCtrResult && (
+                      <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-200 whitespace-pre-wrap max-h-60 overflow-y-auto">
+                        {aiCtrResult}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                    <div className="font-semibold text-xs text-white">2. First 15-Second Hook Doctor</div>
+                    <input
+                      type="text"
+                      value={aiHookDraft}
+                      onChange={(e) => setAiHookDraft(e.target.value)}
+                      placeholder="Current opening spoken line"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white"
+                    />
+                    <button
+                      onClick={async () => {
+                        setAiHookLoading(true);
+                        try {
+                          const res = await fetch('/api/ai/hook-doctor', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ hookDraft: aiHookDraft, topic: aiHookTopic }),
+                          });
+                          const data = await res.json();
+                          if (data.cures) setAiHookResult(data.cures);
+                        } catch (err: any) {
+                          console.error(err);
+                        } finally {
+                          setAiHookLoading(false);
+                        }
+                      }}
+                      disabled={aiHookLoading}
+                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all"
+                    >
+                      {aiHookLoading ? 'Diagnosing...' : 'Cure Hook (5 Drop-Off Fixes)'}
+                    </button>
+                    {aiHookResult && (
+                      <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-200 whitespace-pre-wrap max-h-60 overflow-y-auto">
+                        {aiHookResult}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Code Result */}
-              {aiCodeResult && (
-                <div className="relative rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
-                  <div className="bg-slate-900/80 px-4 py-2 flex items-center justify-between border-b border-slate-800">
-                    <span className="text-xs font-mono text-slate-400">Generated Pipeline Code</span>
-                    <button
-                      onClick={() => copyToClipboard(aiCodeResult, 'ai-code')}
-                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-slate-700"
-                    >
-                      {copiedLink === 'ai-code' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      {copiedLink === 'ai-code' ? 'Copied!' : 'Copy Code'}
-                    </button>
-                  </div>
-                  <pre className="p-5 text-xs text-slate-200 font-mono overflow-x-auto leading-relaxed max-h-[500px]">
-                    <code>{aiCodeResult}</code>
-                  </pre>
+            {/* TOOL 7: Video-to-Article SEO Blog Writer */}
+            {aiActiveTool === 'article' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-indigo-400" />
+                    Video-to-Article SEO Blog Post Writer
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Converts video ideas or notes into a full 1,200+ word publication-ready markdown article with headings, code blocks, and FAQs.
+                  </p>
                 </div>
-              )}
-            </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Article / Video Title:</label>
+                    <input
+                      type="text"
+                      value={aiArticleTitle}
+                      onChange={(e) => setAiArticleTitle(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Key Talking Points & Outline:</label>
+                    <textarea
+                      rows={3}
+                      value={aiArticleNotes}
+                      onChange={(e) => setAiArticleNotes(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    setAiArticleLoading(true);
+                    try {
+                      const res = await fetch('/api/ai/video-to-article', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: aiArticleTitle, notes: aiArticleNotes }),
+                      });
+                      const data = await res.json();
+                      if (data.article) setAiArticleResult(data.article);
+                    } catch (err: any) {
+                      console.error(err);
+                    } finally {
+                      setAiArticleLoading(false);
+                    }
+                  }}
+                  disabled={aiArticleLoading}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md"
+                >
+                  {aiArticleLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                  {aiArticleLoading ? 'Writing 1200+ Word Article...' : 'Generate Full Markdown Blog Article'}
+                </button>
+
+                {aiArticleResult && (
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-5 whitespace-pre-wrap text-xs text-slate-200 leading-relaxed max-h-[500px] overflow-y-auto font-mono">
+                    {aiArticleResult}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TOOL 8: Custom YouTube API & Pipeline Generator */}
+            {aiActiveTool === 'codegen' && (
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-xl">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Code2 className="w-5 h-5 text-indigo-400" />
+                    AI Code Assistant: Custom YouTube API & Pipeline Generator
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Ask Gemini to code custom YouTube downloading pipelines, webhook servers, batch scrapers, or Telegram bots in any language:
+                  </p>
+                </div>
+
+                {/* Preset prompts */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs text-slate-500 font-medium self-center mr-1">Presets:</span>
+                  {[
+                    'FastAPI batch downloader with async queue and Redis',
+                    'Node.js Express stream proxy with WebSockets progress',
+                    'Telegram bot in Python that converts YouTube links to MP3',
+                    'Go microservice downloading YouTube audio and uploading to AWS S3',
+                  ].map((preset, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setAiCodePrompt(preset)}
+                      className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors"
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Input & Config */}
+                <div className="space-y-3">
+                  <textarea
+                    value={aiCodePrompt}
+                    onChange={(e) => setAiCodePrompt(e.target.value)}
+                    rows={3}
+                    placeholder="Describe your custom YouTube API requirement in detail..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-indigo-500"
+                  />
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">Language</label>
+                      <select
+                        value={aiCodeLang}
+                        onChange={(e) => setAiCodeLang(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200"
+                      >
+                        <option value="python">Python</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="nodejs">Node.js (JavaScript)</option>
+                        <option value="go">Go (Golang)</option>
+                        <option value="bash">Bash / Shell</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">Framework</label>
+                      <select
+                        value={aiCodeFramework}
+                        onChange={(e) => setAiCodeFramework(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200"
+                      >
+                        <option value="fastapi">FastAPI</option>
+                        <option value="express">Express</option>
+                        <option value="flask">Flask</option>
+                        <option value="standalone">Standalone Script</option>
+                        <option value="docker">Dockerized App</option>
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-2 flex items-end">
+                      <button
+                        onClick={async () => {
+                          setAiCodeLoading(true);
+                          try {
+                            const res = await fetch('/api/ai/code-assistant', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                prompt: aiCodePrompt,
+                                language: aiCodeLang,
+                                framework: aiCodeFramework,
+                              }),
+                            });
+                            const data = await res.json();
+                            if (data.code) {
+                              setAiCodeResult(data.code);
+                            }
+                          } catch (err: any) {
+                            console.error(err);
+                          } finally {
+                            setAiCodeLoading(false);
+                          }
+                        }}
+                        disabled={aiCodeLoading}
+                        className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                      >
+                        {aiCodeLoading ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            Coding with Gemini...
+                          </>
+                        ) : (
+                          <>
+                            <Code2 className="w-3.5 h-3.5" />
+                            Generate Custom API Code
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Code Result */}
+                {aiCodeResult && (
+                  <div className="relative rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
+                    <div className="bg-slate-900/80 px-4 py-2 flex items-center justify-between border-b border-slate-800">
+                      <span className="text-xs font-mono text-slate-400">Generated Pipeline Code</span>
+                      <button
+                        onClick={() => copyToClipboard(aiCodeResult, 'ai-code')}
+                        className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-slate-700"
+                      >
+                        {copiedLink === 'ai-code' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedLink === 'ai-code' ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <pre className="p-5 text-xs text-slate-200 font-mono overflow-x-auto leading-relaxed max-h-[500px]">
+                      <code>{aiCodeResult}</code>
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
