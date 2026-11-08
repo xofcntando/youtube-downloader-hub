@@ -1,0 +1,8 @@
+{
+  "name": "YouTube API & Downloader Hub",
+  "description": "Comprehensive workbench and API directory for working YouTube downloaders, Cobalt API, Invidious, yt-dlp microservices, and metadata extraction.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

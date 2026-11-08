@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ytdl-fastapi:
+    build: .
+    container_name: ytdl-fastapi
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./tmp:/tmp
